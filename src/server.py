@@ -1,6 +1,38 @@
+# server.py
+# This file contains the server code that is used to handle client requests.
+
 import socket
 import sys
-from thread import *
+import threading
+import time
+
+class ServerThread(threading.Thread):
+    def __init__(self, threadID, name, conn):
+        threading.Thread.__init__(self)
+        self.thread_id = threadID
+        self.thread_name = name
+        self.sock = conn
+
+    def run(self):
+        # Sending message to connected client
+        self.sock.send('Welcome to the py-chat-server.\n')
+        # infinite loop so that function do not terminate and thread do not end.
+        while True:
+
+            # Receiving from client
+            data = self.sock.recv(4096)
+            if data is None:
+                self.sock.send('BAD\n')
+                break
+            
+            # TODO...
+            # Parse the message and take appropriate actions. For example, the data received may be request to
+            # create a new user account, or even a simple text message to be sent to other user.
+            # The py-chat-server understands a set of commands described in the file docs/commands.txt.
+            print data
+            self.sock.sendall('OK\n')
+
+        self.sock.close()
 
 # Setup the server using the file 'server.cfg'
 def config_server():
@@ -32,6 +64,7 @@ def start_server(host, port):
     init_sock.listen(10)
     print 'Socket now listening'
 
+    tid = 0
     # Now keep accepting client requests
     try:
         while 1:
@@ -39,31 +72,12 @@ def start_server(host, port):
             (conn, addr) = init_sock.accept()
             print 'Connected with ' + addr[0] + ':' + str(addr[1])
 
-            # start new thread
-            start_new_thread(client_comm_thread, (conn,))
+            server_thread = ServerThread(tid, 'ServerThread'+str(tid), conn)
+            tid += 1
+            server_thread.start()
+
     except KeyboardInterrupt:
         print 'Exiting server...'
     finally:
         conn.close()
         init_sock.close()
-
-    #init_sock.close()
-
-
-# This is a thread method that communicates with a client
-def client_comm_thread(conn):
-    #Sending message to connected client
-    conn.send('Welcome to the py-chat-server. Receving Data...\n')
-
-    #infinite loop so that function do not terminate and thread do not end.
-    while True:
-
-        #Receiving from client
-        data = conn.recv(1024)
-        if data is None:
-            conn.send('BAD\n')
-            break
-        print data
-        conn.sendall('OK\n')
-
-    conn.close()

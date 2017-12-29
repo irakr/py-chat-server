@@ -9,9 +9,12 @@ if __name__ != "__main__":
 # Main function
 def main():
     (host, port) = config_server()
+    # Use default settings
     if host is None or port is None:
         host = ''
-        port = 8888
+        port = 9000
+    print 'Hostname: ' + str(host)
+    print 'Port: ' + str(port)
     start_server(host, port)
 
 # Call main function
