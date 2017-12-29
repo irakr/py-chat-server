@@ -1,10 +1,13 @@
 # server.py
+######################################################################################
 # This file contains the server code that is used to handle client requests.
+######################################################################################
 
 import socket
 import sys
 import threading
 import time
+from command_handler import *
 
 class ServerThread(threading.Thread):
     def __init__(self, threadID, name, conn):
@@ -14,28 +17,42 @@ class ServerThread(threading.Thread):
         self.sock = conn
 
     def run(self):
-        # Sending message to connected client
+        # Sending welcome message to connected client
         self.sock.send('Welcome to the py-chat-server.\n')
-        # infinite loop so that function do not terminate and thread do not end.
+        reply = 'NULL'
+        # Keep on receiving request commands from the remote host
         while True:
 
             # Receiving from client
-            data = self.sock.recv(4096)
-            if data is None:
-                self.sock.send('BAD\n')
+            try:
+                mesg = self.sock.recv(4096)
+            except socket.error, msg:
+                print msg
+                print 'Closing connection now'
+                break
+            if mesg is None:
+                self.sock.sendall(reply + '\n')
                 break
             
             # TODO...
             # Parse the message and take appropriate actions. For example, the data received may be request to
             # create a new user account, or even a simple text message to be sent to other user.
             # The py-chat-server understands a set of commands described in the file docs/commands.txt.
-            print data
-            self.sock.sendall('OK\n')
+            print mesg
+            cmd = parse_command(mesg)
+            if cmd is not None:
+                cmd.execute()
+                reply = 'OK'
+            else:
+                reply = 'BAD_REQUEST'
+            self.sock.sendall(reply + '\n')
 
         self.sock.close()
 
 # Setup the server using the file 'server.cfg'
 def config_server():
+    return (None, None)
+    '''
     print 'In config_server()'
     try:
         config_file = open('server.cfg', 'r')
@@ -48,6 +65,7 @@ def config_server():
     print port_no
     config_file.close()
     return (host_name[:], int(port_no[:]))
+    '''
 
 # Start the server socket
 def start_server(host, port):
@@ -68,7 +86,10 @@ def start_server(host, port):
     # Now keep accepting client requests
     try:
         while 1:
+            print 'Waiting for connection...'
+            conn = None
             # wait to accept a connection
+            # FIXME... Does not respond to keyboardinterrupt at all (Windows-only problem)
             (conn, addr) = init_sock.accept()
             print 'Connected with ' + addr[0] + ':' + str(addr[1])
 
@@ -79,5 +100,6 @@ def start_server(host, port):
     except KeyboardInterrupt:
         print 'Exiting server...'
     finally:
-        conn.close()
+        if conn:
+            conn.close()
         init_sock.close()

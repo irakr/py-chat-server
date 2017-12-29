@@ -33,7 +33,7 @@ except socket.gaierror:
 print 'Socket Connected to ' + host + ' on ip ' + remote_ip
 
 #Send some data to remote server
-message = "Test"
+message = "TEST"
 
 try :
 	m = s.recv(1024)
