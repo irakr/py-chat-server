@@ -1,0 +1,25 @@
+Types of commands:
+
+1. Info query commands:
+   Prefix character: '?'
+   Privilege level: Anyone
+
+2. Database modification commands:
+   Prefix character: '='
+   Privilege level: Administrator and logged in users
+
+3. User control commands:
+   Prefix character: '%'
+   Privilege level: Logged in users and admin
+
+4. Server control commands:
+   Prefix character: '/'
+   Privilege level: Administrator only
+
+Examples:
+
+> %LOGOUT
+  This command will logout the current user.
+
+> /SHUTDOWN
+  This command will shutdown the server.

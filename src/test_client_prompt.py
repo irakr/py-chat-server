@@ -36,24 +36,23 @@ except socket.error:
 
 print 'Socket Connected to ' + host + ' on ip ' + remote_ip
 
-#Send some data to remote server
-message = "?PING tarak.rigia@gmail.com 10"
-
-try :
-	m = s.recv(1024)
-	print 'SERVER: ' + m
-	#Set the whole string
-	while True:
-		s.send(message)
-		print 'Message sent successfully'
-		m = s.recv(1024)
-		time.sleep(1)
-		print 'SERVER: ' + m
-
-except socket.error:
-    #Send failed
-    print 'Send failed'
-    sys.exit()
+while 1:
+    try :
+        m = s.recv(1024)
+        print 'SERVER: ' + m
+        #Set the whole string
+        while True:
+            # Prompt user to enter a command to be sent to the server
+            message = raw_input('> ')
+            s.send(message)
+            print 'Message sent successfully'
+            m = s.recv(1024)
+            time.sleep(1)
+            print 'SERVER: ' + m
+    except socket.error:
+        #Send failed
+        print 'Send failed'
+        sys.exit()
 
 def recv_timeout(the_socket,timeout=2):
     #make socket non blocking

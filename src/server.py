@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 from command_handler import *
+import server_commands
 
 class ServerThread(threading.Thread):
     def __init__(self, threadID, name, conn):
@@ -30,7 +31,7 @@ class ServerThread(threading.Thread):
                 print msg
                 print 'Closing connection now'
                 break
-            if mesg is None:
+            if (mesg is None) or (len(mesg) == 0):
                 self.sock.sendall(reply + '\n')
                 break
             
@@ -38,16 +39,21 @@ class ServerThread(threading.Thread):
             # Parse the message and take appropriate actions. For example, the data received may be request to
             # create a new user account, or even a simple text message to be sent to other user.
             # The py-chat-server understands a set of commands described in the file docs/commands.txt.
-            print mesg
+            mesg.strip()
+            print 'Mesg: ' + mesg
+            status = 0
             cmd = parse_command(mesg)
-            if cmd is not None:
-                cmd.execute()
+            if cmd.type() != -1:
+                status = cmd.execute()
                 reply = 'OK'
             else:
-                reply = 'BAD_REQUEST'
+                reply = 'UNKNOWN_COMMAND'
+                del cmd
             self.sock.sendall(reply + '\n')
-
-        self.sock.close()
+            # Disconnect
+            if status == 1:
+                self.sock.close()
+                break
 
 # Setup the server using the file 'server.cfg'
 def config_server():
@@ -86,7 +92,12 @@ def start_server(host, port):
     # Now keep accepting client requests
     try:
         while 1:
-            print 'Waiting for connection...'
+            # Check server commands
+            if server_commands.server_shutdown == True:
+                shutdown_server(init_sock)
+                break
+
+            print 'Waiting for connection...' + str(server_commands.server_shutdown)
             conn = None
             # wait to accept a connection
             # FIXME... Does not respond to keyboardinterrupt at all (Windows-only problem)
@@ -98,8 +109,12 @@ def start_server(host, port):
             server_thread.start()
 
     except KeyboardInterrupt:
-        print 'Exiting server...'
+        print '[KeyboardInterrupt] Exiting server...'
     finally:
-        if conn:
-            conn.close()
-        init_sock.close()
+        shutdown_server(init_sock)
+
+def shutdown_server(sock):
+    print 'Shutting down server...'
+    if sock:
+        sock.close
+    #sys.exit()
