@@ -118,4 +118,5 @@ def shutdown_server(sock):
     print 'Shutting down server...'
     if sock:
         sock.close
+
     #sys.exit()
