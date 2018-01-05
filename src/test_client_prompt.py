@@ -1,5 +1,5 @@
-import socket   
-import sys  
+import socket
+import sys
 import struct
 import time
 
@@ -12,6 +12,7 @@ if __name__ == "__main__":
 
     host = sys.argv[1]
     port = 9000
+    #port = 80
 
 #create an INET, STREAMing socket
 try:
@@ -45,10 +46,14 @@ while 1:
         while True:
             # Prompt user to enter a command to be sent to the server
             message = raw_input('> ')
+            message.strip()
+            # Ignore blank message
+            if len(message) == 0:
+                continue
             s.send(message)
             print 'Message sent successfully'
             m = s.recv(1024)
-            if m == 'BYE\n':
+            if m == 'BYE':
                 print 'Logging out...'
                 break
             time.sleep(1)
