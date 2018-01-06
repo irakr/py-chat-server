@@ -5,22 +5,19 @@
 
 import sys
 from server import *
+import server_config as sconf
 
 # Verify main file
 if __name__ != "__main__":
     print 'Error: Not in main.py'
-    exit()
+    exit(1)
 
 # Main function
 def main():
-    (host, port) = config_server()
-    # Use default settings
-    if host is None or port is None:
-        host = ''
-        port = 9000
-    print 'Hostname: ' + str(host)
-    print 'Port: ' + str(port)
-    start_server(host, port)
+    sconf.config_server()
+    print 'Hostname: ' + sconf.HOST_ADDR
+    print 'Port: ' + str(sconf.PORT_NO)
+    start_server(sconf.HOST_ADDR, sconf.PORT_NO)
 
 # Call main function
 exit(main())

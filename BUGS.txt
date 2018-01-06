@@ -1,0 +1,5 @@
+List of bugs:
+
+1. In server.py -> unblock_main()
+   - The server process goes to a TIME_WAIT state after getting the command /SHUTDOWN from a client.
+   - To check you can simply use the command '$ netstat -t' in the linux shell after the server is shut down.

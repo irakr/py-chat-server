@@ -2,9 +2,12 @@
 #################################################################
 # The class heirarchy of each command types.
 #################################################################
+import threading
+import server
+from exceptions_types import *
 
 # Base class of all command types.
-class CommandBase:
+class CommandBase(object):
     # Execute the corresponding action intended by the command and list of args.
     def execute(self, cmd, args):
         pass
@@ -25,22 +28,34 @@ class InfoUpdateCommand(CommandBase):
 class UserControlCommand(CommandBase):
     def execute(self, cmd, args):
         print 'In UserControlCommand.execute()'
+
         if cmd == 'TEST':
             print 'Testing...'
+
+        elif cmd == 'PING':
+            if len(args) == 0:
+                print 'Argument NULL!!!'
+                return -2
+            print 'Pinging ' + args[0]
+            # TODO... ping the requested user.
+
         elif cmd == 'LOGOUT':
             print 'Logging out user...'
+            threading.current_thread().time_to_stop = True
+
         else:
             print 'Unknown command: ' + cmd
             return -1
+
         return 0
 
 # Server control command (Needs administrative privilege)
 class ServerControlCommand(CommandBase):
     def execute(self, cmd, args):
         print 'In ServerControlCommand.execute()'
-        import server_config
+
         if cmd == 'SHUTDOWN':
-            server_config.server_shutdown = True
+            raise ServerShutdownRequest(threading.current_thread().current_user().privilege)
         else:
             print 'Unknown command: ' + cmd
             return -1

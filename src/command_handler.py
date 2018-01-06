@@ -8,7 +8,7 @@ import command_types as ct
 
 # This is a class that handles a command execution  of the type 'Command'.
 # Having a solid object for a command will provide robust features.
-class CommandHandler:
+class CommandHandler(object):
     '''
     This class is responsible for creating and calling the actual
     command type class, i.e., sub-class of the CommandBase class

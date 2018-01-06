@@ -2,17 +2,13 @@ import socket
 import sys
 import struct
 import time
+import server_config as sconf
 
-#main function
-if __name__ == "__main__":
+if(len(sys.argv) < 2) :
+    print 'Usage : python client.py hostname'
+    sys.exit()
 
-    if(len(sys.argv) < 2) :
-        print 'Usage : python client.py hostname'
-        sys.exit()
-
-    host = sys.argv[1]
-    port = 9000
-    #port = 80
+sconf.config_server()
 
 #create an INET, STREAMing socket
 try:
@@ -24,18 +20,18 @@ except socket.error:
 print 'Socket Created'
 
 try:
-    remote_ip = socket.gethostbyname( host )
+    remote_ip = socket.gethostbyname( sconf.HOST_ADDR )
 except socket.gaierror:
     print 'Hostname could not be resolved. Exiting'
     sys.exit()
 
 try:
-    s.connect((host, port))
+    s.connect((sconf.HOST_ADDR, sconf.PORT_NO))
 except socket.error:
     print 'Server is currently offline.'
     sys.exit()
 
-print 'Socket Connected to ' + host + ' on ip ' + remote_ip
+print 'Socket Connected to ' + sconf.HOST_ADDR + ' on ip ' + remote_ip
 
 # main loop
 while 1:
