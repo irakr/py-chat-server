@@ -11,6 +11,8 @@ from command_handler import parse_command
 import server_config
 import user
 from exceptions_types import *
+import logging_wrapper as logw
+logger = logw.createLogger(__name__)
 
 # TODO... Keep a global dictionary of all the server threads.
 # There are many advantages in doing this. Example, when shutting down the
@@ -36,7 +38,7 @@ class ServerThread(threading.Thread):
         addr_port = remote_addr[0] + ':' + str(remote_addr[1])
         self.name = '<TH>' + addr_port[:]
         server_threads[addr_port] = self
-        print '--->' + server_threads[addr_port].name
+        logger.debug('---> %s', server_threads[addr_port].name)
 
         self.time_to_stop = False
 
@@ -51,11 +53,11 @@ class ServerThread(threading.Thread):
             try:
                 mesg = self.__sock.recv(4096)
             except socket.error as e:
-                print "error {0}:{1}".format(e.errno, e.strerror)
+                logger.critical("error %s:%s", e.errno, e.strerror)
                 self.__close_connection()
                 break
             if (mesg is None) or (len(mesg) == 0):
-                print 'Lost connection with ' + self.__remote_addr[0] + ':' + str(self.__remote_addr[1])
+                logger.debug('Lost connection with %s : %s', self.__remote_addr[0], str(self.__remote_addr[1]))
                 self.__close_connection()
                 break
 
@@ -64,7 +66,7 @@ class ServerThread(threading.Thread):
             # create a new user account, or even a simple text message to be sent to other user.
             # The py-chat-server understands a set of commands described in the file docs/commands.txt.
             mesg.strip()
-            print '\n[' + self.__sock.getpeername()[0] + ']: ' + mesg
+            print '[{}]: {}'.format(self.__sock.getpeername()[0], mesg)
 
             # Get command type
             cmd = parse_command(mesg)
@@ -113,7 +115,7 @@ class ServerThread(threading.Thread):
 
     # Logout the user
     def __close_connection(self):
-        print 'Disconnecting ' + self.__remote_addr[0] + ':' + str(self.__remote_addr[1])
+        logger.debug('Disconnecting %s : %s', self.__remote_addr[0], self.__remote_addr[1])
         #self.__sock.sendall('BYE')
         self.__sock.close()
         try:
@@ -125,17 +127,14 @@ class ServerThread(threading.Thread):
 # Start the server socket
 def start_server(host, port):
     init_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print 'Initial socket created'
 
     try:
         init_sock.bind((host, port))
     except socket.error , msg:
-        print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+        logger.critical('Bind failed. Error(%s): %s', str(msg[0]), msg[1])
         sys.exit()
-    print 'Socket bind complete'
 
     init_sock.listen(10)
-    print 'Socket now listening'
 
     # Now keep accepting client requests
     try:
@@ -156,11 +155,11 @@ def start_server(host, port):
             server_thread.start()
 
     except KeyboardInterrupt:
-        print '[KeyboardInterrupt] Exiting server...'
+        logger.debug('[KeyboardInterrupt] Exiting server...')
     except ServerShutdownRequest as e:
-        print repr(e)
+        logger.debug(repr(e))
     except Exception as e:
-        print '[EXCEPTION]: ' + repr(e)
+        logger.error('[Some exception]: %s', repr(e))
     finally:
         shutdown_server(init_sock)
 
@@ -172,19 +171,19 @@ def shutdown_server(sock):
 
 # Bring out the main thread from the socket.accpet() call.
 def unblock_main():
-    print 'In unblock_main()'
+    logger.debug('In unblock_main()')
     import os
     cpid = os.fork()
     if cpid != 0:
-        print 'Parent: {}'.format(os.getpid())
+        logger.debug('Parent: {}'.format(os.getpid()))
         return
     # Child process will do the rest.
-    print 'Child: {}'.format(os.getpid())
+    logger.debug('Child: {}'.format(os.getpid()))
     try:
         just_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         just_sock.bind(('localhost', server_config.UNBLOCKER_PORT))
         just_sock.connect((server_config.HOST_ADDR, server_config.PORT_NO))
-        print '{} Connected to server'.format(os.getpid())
+        logger.debug('{} Connected to server'.format(os.getpid()))
         just_sock.sendall("It's just me. Shutdown now!")
         just_sock.close()
     except socket.error as e:

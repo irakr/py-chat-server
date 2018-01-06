@@ -5,6 +5,8 @@
 # - Executing command.
 ######################################################################################
 import command_types as ct
+import logging_wrapper as logw
+logger = logw.createLogger(__name__)
 
 # This is a class that handles a command execution  of the type 'Command'.
 # Having a solid object for a command will provide robust features.
@@ -31,7 +33,7 @@ class CommandHandler(object):
         # '/' refers to server control commands (Special privilege is required for these commands).
         ###########################################################################################
         if (self.__cmd_str[0] != '=') and (self.__cmd_str[0] != '?') and (self.__cmd_str[0] != '%') and (self.__cmd_str[0] != '/'):
-            print '[Error]: Invalid command: ' + self.__cmd_str
+            logger.debug('[Error]: Invalid command: ' + self.__cmd_str)
             self.__cmd_type = -1 # Invalid command
             return
 
@@ -61,7 +63,7 @@ class CommandHandler(object):
 
         # Set command name
         self.__cmd_name = token[:]
-        print 'Command: ' + self.__cmd_name
+        logger.debug('Command: ' + self.__cmd_name)
 
         # Parse out the command args if there is any.
         if no_args == True:
@@ -75,7 +77,7 @@ class CommandHandler(object):
 
     # Execute the corresponding action intended by the command.
     def execute(self):
-        print 'In CommandHandler.execute()'
+        logger.debug('In CommandHandler.execute()')
         return self.__cmd.execute(self.__cmd_name, self.__cmd_args)
 
 # Parses and creates an appropriate 'CommandHandler' object which will be used

@@ -20,13 +20,16 @@ PORT_NO = 9000
 # Port no that will be used to unblock the accept() call in the main thread.
 UNBLOCKER_PORT = 15000
 
+import logging_wrapper as logw
+logger = logw.createLogger(__name__)
+
 # Setup the server using the file 'server.cfg'
 def config_server():
-    print 'In config_server()'
+    logger.debug('Begin config_server()')
     try:
         config_file = open(server_conf_file, 'r')
     except IOError:
-        print 'No config file detected. Default configurations will be applied.'
+        logger.error('No config file detected. Default configurations will be applied.')
         return (None, None)
 
     global HOST_ADDR, PORT_NO

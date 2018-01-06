@@ -1,5 +1,8 @@
 # user.py
 
+import logging_wrapper as logw
+logger = logw.createLogger(__name__)
+
 # Global dictionaries of users
 all_users = {}
 online_users = {}
@@ -43,7 +46,7 @@ class User(object):
     def log_in(self):
         self.__logged_in = True
         online_users[self.__uid] = self
-        print '--->' + self.__uid + ' added to global dict.'
+        logger.debug('---> + %s + added to global dict.', self.__uid)
 
     def log_out(self):
         self.__logged_in = False
