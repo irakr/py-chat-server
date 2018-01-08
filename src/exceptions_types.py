@@ -3,7 +3,8 @@
 # Exception class heirarchy.
 #########################################################
 import logging_wrapper as logw
-logger = logw.createLogger(__name__)
+dlogger = logw.DLogger(__name__)
+elogger = logw.ELogger()
 
 class PyChatException(Exception):
     ''' Base class for all exceptions of the py-chat-server. '''

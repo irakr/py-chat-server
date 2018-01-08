@@ -2,10 +2,14 @@ TODO list:
 
 - Server side code:
 
-1. Create a certain number of listenning threads/processes in advance for better performance. Currently only the main thread stays in listen mode and
+1. (RECOMMENDED) Create a certain number of listenning threads/processes in advance for better performance. Currently only the main thread stays in listen mode and
    after establishing a connection with a client invokes a new thread to handle that connection.
 
-2. Execute every command in a separate thread.
+2. (OPTIONAL) Execute every command in a separate thread.
+
+3. (RECOMMENDED) Add the %PING command functionality.
+
+4. Make the logging functionality toggle-able.
 
 - Client side code:
 

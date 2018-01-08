@@ -5,17 +5,58 @@
 ########################################################################
 import logging
 
-# Change these values to modify logger.
-log_format = "[%(levelname)s][%(asctime)s] M/%(name)s \"\" %(message)s \"\""
-log_level = logging.DEBUG
+# Default log filenames and properties
+dlog_file = 'py-chat-dlog.log'
+elog_file = 'py-chat-elog.log'
+log_file_size = 1 << 20  # 1 MB
+log_file_backups = 5
 
-# A wrapper function to create a new logger instance
-def createLogger(module='??'):
-    logger = logging.getLogger(module)
-    logger.setLevel(log_level)
-    sh = logging.StreamHandler()
-    sh.setLevel(log_level)
-    formatter = logging.Formatter(log_format)
-    sh.setFormatter(formatter)
-    logger.addHandler(sh)
-    return logger
+#### Wrapper classes and functions to create a new logger instances ####
+
+# Just helper classes.
+
+# Class used to log debug information only. (Only useful for developers)
+class DLogger(object):
+    log_format = "[%(levelname)s][%(asctime)s] M/%(name)s \"\" %(message)s \"\""
+    log_level = logging.DEBUG
+
+    def __init__(self, module='??', log_to_file=False):
+        self.logger = logging.getLogger(module)
+        self.logger.setLevel(DLogger.log_level)
+        # log to file if True
+        if log_to_file == True:
+            sh = logging.RotatingFileHandler(dlog_file, maxBytes=log_file_size, backupCount=log_file_backups)
+        else:
+            sh = logging.StreamHandler()
+        sh.setLevel(DLogger.log_level)
+
+        formatter = logging.Formatter(DLogger.log_format)
+        sh.setFormatter(formatter)
+        if not self.logger.handlers:
+            self.logger.addHandler(sh)
+
+    def log(self, mesg):
+        self.logger.debug(mesg)
+
+# Class used to log event information.
+class ELogger(object):
+    log_format = "[%(asctime)s] :: %(message)s"
+    log_level = logging.INFO
+
+    def __init__(self, log_to_file=False):
+        self.logger = logging.getLogger('')
+        self.logger.setLevel(ELogger.log_level)
+
+        if log_to_file == True:
+            sh = logging.RotatingFileHandler(dlog_file, maxBytes=log_file_size, backupCount=log_file_backups)
+        else:
+            sh = logging.StreamHandler()
+        sh.setLevel(ELogger.log_level)
+
+        formatter = logging.Formatter(ELogger.log_format)
+        sh.setFormatter(formatter)
+        if not self.logger.handlers:
+            self.logger.addHandler(sh)
+
+    def log(self, mesg):
+        self.logger.info(mesg)

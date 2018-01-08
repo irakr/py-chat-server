@@ -6,7 +6,8 @@ import threading
 import server
 from exceptions_types import *
 import logging_wrapper as logw
-logger = logw.createLogger(__name__)
+dlogger = logw.DLogger(__name__)
+elogger = logw.ELogger()
 
 # Base class of all command types.
 class CommandBase(object):
@@ -17,26 +18,26 @@ class CommandBase(object):
 # Info query command
 class QueryCommand(CommandBase):
     def execute(self, cmd, args):
-        logger.debug('In QueryCommand.execute()')
+        dlogger.log('In QueryCommand.execute()')
         return 0
 
 # Info updation command
 class InfoUpdateCommand(CommandBase):
     def execute(self, cmd, args):
-        logger.debug('In InfoUpdateCommand.execute()')
+        dlogger.log('In InfoUpdateCommand.execute()')
         return 0
 
 # User control command
 class UserControlCommand(CommandBase):
     def execute(self, cmd, args):
-        logger.debug('In UserControlCommand.execute()')
+        dlogger.log('In UserControlCommand.execute()')
 
         if cmd == 'TEST':
             print 'Testing...'
 
         elif cmd == 'PING':
             if len(args) == 0:
-                logger.error('Argument NULL!!!')
+                dlogger.log('Argument NULL!!!')
                 return -2
             print 'Pinging ' + args[0]
             # TODO... ping the requested user.
@@ -54,7 +55,7 @@ class UserControlCommand(CommandBase):
 # Server control command (Needs administrative privilege)
 class ServerControlCommand(CommandBase):
     def execute(self, cmd, args):
-        logger.debug('In ServerControlCommand.execute()')
+        dlogger.log('In ServerControlCommand.execute()')
 
         if cmd == 'SHUTDOWN':
             raise ServerShutdownRequest(threading.current_thread().current_user().privilege)

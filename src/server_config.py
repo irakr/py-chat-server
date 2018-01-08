@@ -21,15 +21,16 @@ PORT_NO = 9000
 UNBLOCKER_PORT = 15000
 
 import logging_wrapper as logw
-logger = logw.createLogger(__name__)
+dlogger = logw.DLogger(__name__)
+elogger = logw.ELogger()
 
 # Setup the server using the file 'server.cfg'
 def config_server():
-    logger.debug('Begin config_server()')
+    dlogger.log('Begin config_server()')
     try:
         config_file = open(server_conf_file, 'r')
     except IOError:
-        logger.error('No config file detected. Default configurations will be applied.')
+        dlogger.log('No config file detected. Default configurations will be applied.')
         return (None, None)
 
     global HOST_ADDR, PORT_NO

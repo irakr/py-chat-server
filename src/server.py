@@ -12,7 +12,8 @@ import server_config
 import user
 from exceptions_types import *
 import logging_wrapper as logw
-logger = logw.createLogger(__name__)
+dlogger = logw.DLogger(__name__)
+elogger = logw.ELogger()
 
 # TODO... Keep a global dictionary of all the server threads.
 # There are many advantages in doing this. Example, when shutting down the
@@ -38,7 +39,7 @@ class ServerThread(threading.Thread):
         addr_port = remote_addr[0] + ':' + str(remote_addr[1])
         self.name = '<TH>' + addr_port[:]
         server_threads[addr_port] = self
-        logger.debug('---> %s', server_threads[addr_port].name)
+        dlogger.log('---> {}'.format(server_threads[addr_port].name) )
 
         self.time_to_stop = False
 
@@ -53,11 +54,11 @@ class ServerThread(threading.Thread):
             try:
                 mesg = self.__sock.recv(4096)
             except socket.error as e:
-                logger.critical("error %s:%s", e.errno, e.strerror)
+                dlogger.log("error %s:%s", e.errno, e.strerror)
                 self.__close_connection()
                 break
             if (mesg is None) or (len(mesg) == 0):
-                logger.debug('Lost connection with %s : %s', self.__remote_addr[0], str(self.__remote_addr[1]))
+                dlogger.log('Lost connection with {} : {}'.format(self.__remote_addr[0], str(self.__remote_addr[1])))
                 self.__close_connection()
                 break
 
@@ -115,7 +116,7 @@ class ServerThread(threading.Thread):
 
     # Logout the user
     def __close_connection(self):
-        logger.debug('Disconnecting %s : %s', self.__remote_addr[0], self.__remote_addr[1])
+        dlogger.log('Disconnecting {} : {}'.format(self.__remote_addr[0], self.__remote_addr[1]) )
         #self.__sock.sendall('BYE')
         self.__sock.close()
         try:
@@ -131,7 +132,7 @@ def start_server(host, port):
     try:
         init_sock.bind((host, port))
     except socket.error , msg:
-        logger.critical('Bind failed. Error(%s): %s', str(msg[0]), msg[1])
+        dlogger.log('Bind failed. Error({}): {}'.format(str(msg[0]), msg[1]) )
         sys.exit()
 
     init_sock.listen(10)
@@ -155,13 +156,19 @@ def start_server(host, port):
             server_thread.start()
 
     except KeyboardInterrupt:
-        logger.debug('[KeyboardInterrupt] Exiting server...')
+        dlogger.log('[KeyboardInterrupt] Exiting server...')
     except ServerShutdownRequest as e:
-        logger.debug(repr(e))
+        dlogger.log(repr(e))
     except Exception as e:
-        logger.error('[Some exception]: %s', repr(e))
+        dlogger.log('[Some exception]: %s', repr(e))
     finally:
         shutdown_server(init_sock)
+    ## XXX ... A weird little tip here.
+    ## If the server shuts down without showing any errors or exceptions
+    ## then comment out all the exception handler statements above including
+    ## 'finally'. Otherwise some exeption is generated somewhere within the
+    ## program and no information is emitted on it.
+    ## ------------------------------------------------------------------------
 
 def shutdown_server(sock):
     print 'Shutting down server...'
@@ -171,21 +178,21 @@ def shutdown_server(sock):
 
 # Bring out the main thread from the socket.accpet() call.
 def unblock_main():
-    logger.debug('In unblock_main()')
+    dlogger.log('In unblock_main()')
     import os
     cpid = os.fork()
     if cpid != 0:
-        logger.debug('Parent: {}'.format(os.getpid()))
+        dlogger.log('Parent: {}'.format(os.getpid()))
         return
     # Child process will do the rest.
-    logger.debug('Child: {}'.format(os.getpid()))
+    dlogger.log('Child: {}'.format(os.getpid()))
     try:
         just_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         just_sock.bind(('localhost', server_config.UNBLOCKER_PORT))
         just_sock.connect((server_config.HOST_ADDR, server_config.PORT_NO))
-        logger.debug('{} Connected to server'.format(os.getpid()))
+        dlogger.log('{} Connected to server'.format(os.getpid()))
         just_sock.sendall("It's just me. Shutdown now!")
         just_sock.close()
-    except socket.error as e:
+    except socket.log as e:
         print e
         sys.exit()
