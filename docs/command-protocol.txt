@@ -1,0 +1,32 @@
+*************************************************************************************************
+* This documentation describes the details about the commands that are used by the server and the
+* client applications to communicate with each other.
+*************************************************************************************************
+
+>> Properties of the py-chat-server commands:
+
+1. Each command is represented by a 16-bit integer. This is called the Global Command Code Space(GCCP).
+
+2. There are various types of commands:
+	- Info query commands
+	- Database modification commands
+	- User control commands
+	- Server control commands
+
+3. Within the GCCP, each of the above command types are assigned sub-spaces called as Sectors. The GCCP
+   is divided into 5 sectors; 4 for the each type of command and, 1 is a special reservation for the
+   ASCII charset.
+
+4. The table below shows the code space mapping along with some other attributes:
+   
+   ---------------------------------------------------------------------------------------
+   |   Value Range   |               Command Type           |        Privilege Level     |
+   ---------------------------------------------------------------------------------------
+   |     0 - 127     |              ASCII reserved          |             X              |
+   |   128 - 16479   |         Server control commands      |        Administrator       |
+   | 16480 - 32831   |          User control commands       |    User + Administrator    |
+   | 32832 - 49183   |           Info query commands        |    User + Administrator    |
+   | 49184 - 65535   |     Database modification commands   |    User + Administrator    |
+   ---------------------------------------------------------------------------------------
+
+

@@ -11,6 +11,8 @@ TODO list:
 
 4. Make the logging functionality toggle-able.
 
+5. Change the return value scheme of command_types to be more informative instead of just returning an integer.
+
 - Client side code:
 
 1. Using threading.Timer, schedule an event that will frequently check if the server is still alive.

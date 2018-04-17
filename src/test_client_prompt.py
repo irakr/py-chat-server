@@ -2,7 +2,22 @@ import socket
 import sys
 import struct
 import time
+import threading
 import server_config as sconf
+
+class PingThread(threading.Thread):
+    def run(self):
+        udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        udp_sock.settimeout(5)
+        while 1:
+            try:
+                mesg, addr = udp_sock.recvfrom(1024)
+            except socket.timeout as to:
+                print 'socket.recvfrom() timed out.'
+                time.sleep(1)
+                continue
+            if len(mesg) > 0:
+                udp_sock.sendto('PING OK', (addr[0], addr[1]))
 
 if(len(sys.argv) < 2) :
     print 'Usage : python client.py hostname'
@@ -33,6 +48,10 @@ except socket.error:
 
 print 'Socket Connected to ' + sconf.HOST_ADDR + ' on ip ' + remote_ip
 
+# FIXME... Some weird BUG.
+# Run PING thread.
+#PingThread().start()
+
 # main loop
 while 1:
     try :
@@ -58,43 +77,5 @@ while 1:
         #Send failed
         print msg
         sys.exit()
-
-def recv_timeout(the_socket, timeout=2):
-    #make socket non blocking
-    the_socket.setblocking(0)
-
-    #total data partwise in an array
-    total_data = [];
-    data = '';
-
-    #beginning time
-    begin = time.time()
-    while 1:
-        #if you got some data, then break after timeout
-        if total_data and time.time() - begin > timeout:
-            break
-
-        #if you got no data at all, wait a little longer, twice the timeout
-        elif time.time() - begin > timeout * 2:
-            break
-
-        #recv something
-        try:
-            data = the_socket.recv(8192)
-            if data:
-                total_data.append(data)
-                #change the beginning time for measurement
-                begin = time.time()
-            else:
-                #sleep for sometime to indicate a gap
-                time.sleep(0.1)
-        except:
-            pass
-
-    #join all parts to make final string
-    return ''.join(total_data)
-
-#get reply and print
-#print recv_timeout(s)
 
 s.close()

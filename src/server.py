@@ -7,6 +7,7 @@ import socket
 import sys
 import threading
 import time
+from os import _exit
 from command_handler import parse_command
 import server_config
 import user
@@ -67,7 +68,7 @@ class ServerThread(threading.Thread):
             # create a new user account, or even a simple text message to be sent to other user.
             # The py-chat-server understands a set of commands described in the file docs/commands.txt.
             mesg.strip()
-            print '[{}]: {}'.format(self.__sock.getpeername()[0], mesg)
+            elogger.log('[{}]: {}'.format(self.__sock.getpeername()[0], mesg))
 
             # Get command type
             cmd = parse_command(mesg)
@@ -89,6 +90,8 @@ class ServerThread(threading.Thread):
                     self.__sock.sendall('UNKNOWN_COMMAND')
                 elif status == -2:
                     self.__sock.sendall('INVALID_ARGUMENT')
+                elif status == -3:
+                    self.__sock.sendall('NO_RESPONSE_FROM_REMOTE')
                 # XXX... Any other code not yet checked.
 
             except ServerShutdownRequest as exc:
@@ -124,6 +127,9 @@ class ServerThread(threading.Thread):
             del server_threads[key]
         except KeyError:
             pass # Silently delete the key
+
+    def remote_addr(self):
+        return self.__remote_addr
 
 # Start the server socket
 def start_server(host, port):
